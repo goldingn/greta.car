@@ -20,3 +20,10 @@ tf_rowsums <- .internals$tensors$tf_rowsums
 
 fl <- .internals$utils$misc$fl
 op <- .internals$nodes$constructors$op
+
+unknowns <- .internals$greta_arrays$unknowns$unknowns
+get_node <- .internals$greta_arrays$get_node
+
+# these aren't exported for some reason
+check_dimension <- greta:::check_dimension
+tf_transpose <- greta:::tf_transpose
