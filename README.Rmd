@@ -20,7 +20,99 @@ knitr::opts_chunk$set(
 [![R-CMD-check](https://github.com/goldingn/greta.car/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/goldingn/greta.car/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
-This is an experimental extension package to greta for implementing conditional autoregressive models. The package infrastructure itself is from the [greta.template](https://github.com/greta-dev/greta.template) repo.
+This is an experimental extension package to greta for implementing conditional autoregressive models. Currently implemented is an experimental `icar()` distribution for efficiently modelling intrisic conditional autoregressive models, and an example analysis for it
+
+```{r echo = FALSE}
+set.seed(2023-05-19)
+```
+
+Define an ICAR model on a network
+```{r}
+# define a network on a ring with a given number of nodes
+n_nodes <- 20
+edges <- cbind(1:n_nodes, c(2:n_nodes, 1))
+```
+
+Simulate some true parameters and fake Gaussian observations at each
+```{r}
+true_phi <- rnorm(n_nodes)
+true_phi <- true_phi - sum(true_phi) / n_nodes
+# sum(true_phi)
+true_intercept <- 2
+true_sd <- 0.2
+y <- rnorm(n = n_nodes,
+           mean = true_intercept + true_phi,
+           sd = true_sd)
+```
+
+Visualise this data with igraph
+```{r message = FALSE}
+library(igraph)
+g <- graph_from_edgelist(edges, directed = FALSE)
+scale <- y
+scale <- scale - min(scale)
+scale <- scale / max(scale)
+V(g)$color <- grey(scale)
+plot(g)
+```
+
+
+Define a greta model for this
+```{r}
+library(greta.car)
+
+# define an ICAR random effect on this network
+phi <- icar(edges)
+# phi has length n_nodes (extracted from 'edges')
+
+# apply soft sum-to-zero, to avoid identifiability issues
+nil <- zeros(1)
+distribution(nil) <- normal(sum(phi), n_nodes * 0.001)
+
+# define an observation model for the data
+intercept <- normal(0, 1)
+sd <- normal(0, 1, truncation = c(0, Inf))
+distribution(y) <- normal(intercept + t(phi), sd)
+```
+Fit the model by MCMC
+```{r}
+m <- model(phi)
+draws <- mcmc(m)
+```
+Check convergence of chains (results hidden here)
+```{r results = "hide", fig.show = "hide"}
+coda::gelman.diag(draws, autoburnin = FALSE, multivariate = FALSE)
+plot(draws)
+```
+
+Plot concordance of phi estimates with 'true' values
+```{r}
+estimate <- summary(draws)$statistics[, "Mean"]
+ci <- summary(draws)$quantiles[, c("2.5%", "97.5%")]
+truth <- c(true_phi)
+plot(estimate ~ truth,
+     ylim = range(ci))
+arrows(x0 = truth,
+       x1 = truth,
+       y0 = ci[, 1],
+       y1 = ci[, 2], length = 0)
+abline(0, 1, lty = 2)
+```
+
+Visualise the posterior means with iGraph (note the orders and locations of nodes have changed from the above)
+```{r}
+library(igraph)
+g <- graph_from_edgelist(edges, directed = FALSE)
+scale <- estimate
+scale <- scale - min(scale)
+scale <- scale / max(scale)
+V(g)$color <- grey(scale)
+plot(g)
+```
+
+---
+ 
+The package infrastructure itself is from the [greta.template](https://github.com/greta-dev/greta.template) repo, and checklist for setting that up remains below.
 
 #### to do list
 
@@ -44,9 +136,9 @@ This is an experimental extension package to greta for implementing conditional 
     - [x] the `@description` documentation field of `R/package.R` 
  - [x] add a github actions badge with `use_github_actions_badge()`
  - [x] edit the [codecov](https://codecov.io) badge in `README.Rmd` to point to your package
- - [ ] Write a simple example introducing the package and add it to `R/package.R`
- - [ ] Update `README.Rmd` to sell to people with a sales pitch and maybe an example that creates a figure, to get people excited about your package.
- - [ ] Start adding functions, documentation and examples to new R files in `R` folder
+ - [x] Write a simple example introducing the package and add it to `R/package.R`
+ - [x] Update `README.Rmd` to sell to people with a sales pitch and maybe an example that creates a figure, to get people excited about your package.
+ - [x] Start adding functions, documentation and examples to new R files in `R` folder
  - [ ] Write some unit tests for these functions in the `tests/testthat` folder
- - [ ] Delete the example function and test files `R/square.R` and `tests/testthat/test-square.R` 
+ - [x] Delete the example function and test files `R/square.R` and `tests/testthat/test-square.R` 
  
