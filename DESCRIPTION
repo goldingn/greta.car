@@ -1,19 +1,19 @@
-Package: greta.template
-Title: What the Package Does (One Line, Title Case)
+Package: greta.carC
+Title: Conditional Autoregressive Models in greta
 Version: 0.0.0.9000
 Authors@R: c(
     person(
-        given = "First", 
-        family = "Last",
-        email = "first.last@example.com", 
+        given = "Nick", 
+        family = "Golding",
+        email = "nick.golding.research@gmail.com", 
         role = c("aut", "cre"),
         comment = c(ORCID = "YOUR-ORCID-ID")
       )
     )
-Description: What the package does (one paragraph).
-License: Apache License 2.0
-URL: https://github.com/your_username/your_repository
-BugReports: https://github.com/your_username/your_repository/issues
+Description: Distributions and utility functions that extend greta by making it easy to define conditional autoregressive models.
+License: Apache License (>= 2)
+URL: https://github.com/goldingn/greta.car
+BugReports: https://github.com/goldingn/greta.car/issues
 Depends: 
     greta (>= 0.4.2),
     R (>= 3.1.0)

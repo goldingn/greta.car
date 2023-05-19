@@ -1,10 +1,11 @@
 # this R file is just here to produce a package-level helpfile for people to
 # look at when they get started
 
-#' @title What the Package Does (One Line, Title Case)
-#' @name greta.template
+#' @title Conditional Autoregressive Models in greta 
+#' @name greta.car
 #' 
-#' @description describe your package here, you can re-use the text from DESCRIPTION
+#' @description Distributions and utility functions that extend greta by making it easy to define conditional autoregr
+essive models. 
 #' 
 #' @docType package
 #' 
